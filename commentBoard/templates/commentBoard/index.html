@@ -1,0 +1,94 @@
+<head>
+<title>perkBoard</title>
+<link href="/static/commentBoard/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body style="background-color:#E0EEEE">
+<script src="/static/commentBoard/jquery.js"></script>
+<script src="/static/commentBoard/bootstrap.js"></script>
+<h1>perkBoard - Post it!</h1>
+
+{%if errors%}
+{%for error in errors%}
+	<div class="row text-center">
+			<h4 style="color: red"> {{error}} </h4>
+	</div>
+{%endfor%}
+{%endif%}
+
+<div class = "container">
+
+{% if postList %}
+	<div class="row text-center">
+		<h2> Posts </h2>
+	</div>
+{% endif %}
+	<div class="row text-center">
+		<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#post">
+		  Post
+		</button>
+	</div>
+
+{% if postList%}
+	{% for post in postList %}
+	<div class = "row text-center" style="border:5px solid white">
+		<div class = "col-md-2" >
+			<button type="button" class="btn btn-success" onclick="upVote({{post.id}})">
+		  		UpVote
+			</button>
+			<h3>{{post.score}}</h3>
+			<button type="button" class="btn btn-danger" onclick="downVote({{post.id}})">
+	  			DownVote
+			</button>
+		</div>
+		<div class = "col-md-8">
+			<p>{{post.content}}</p>
+			<a class ="btn btn-info" href="/{{post.id}}">View Post
+			</a>
+		</div>
+	</div>
+	{% endfor %}
+{% endif %}
+
+<div class="modal fade" id="post" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  	<div class="modal-dialog">
+    	<div class="modal-content">
+    		<div class="modal-header">
+	        	<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">x</span></button>
+	        	<h4 class="modal-title" id="commentTitle">Make Comment</h4>
+	      	</div>
+			<form action = "/" method = "post">
+			<div class="modal-body">
+				{% csrf_token %}
+			    {% for field in form%}
+			    <div class="fieldWrapper">
+			        {{ field.label_tag }} {{ field }}
+			    </div>
+				{% endfor %}
+			</div>
+			<div class="modal-footer">
+				<input type="submit" value="Post" class="btn btn-success" />
+			</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+
+</div>
+
+<script>
+	function upVote(postId){
+		$.post('/'+postId+'/postVote/', {up:true, csrfmiddlewaretoken: "{{ csrf_token }}"}).done(function(){
+			location.reload(true);
+		});
+	}
+	function downVote(postId){
+		$.post('/'+postId+'/postVote/', {up:false, csrfmiddlewaretoken: "{{ csrf_token }}"}).done(function(){
+			location.reload(true);
+		});
+	}
+</script>
+
+</body>
+
