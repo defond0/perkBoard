@@ -15,11 +15,13 @@ def index(request):
 	if request.method == 'POST':
 		form = postForm(request.POST)
 		if form.is_valid():
+			#create post and show its view page
 			context['post']=savePost(form.cleaned_data)
 			context['comments']=getComments(context['post'].id)
 			context['form']=commentForm()
 			return render(request, 'commentBoard/post.html',context)
 		else:
+			#report error
 			postList = Post.objects.order_by('-score')
 			context['postList']=postList
 			context['form']=postForm()
@@ -37,20 +39,25 @@ def post(request, post_id):
 	p = Post.objects.get(id=post_id)
 	c = getComments(p.id)
 	context={'comments':c, 'post':p, 'form':commentForm()}
+	# Handle POSTS
 	if request.method == 'POST':
 		form = commentForm(request.POST)
 		if form.is_valid():
+			#create comment 
 			comment=saveComment(form.cleaned_data,p)
 			return redirect('/'+str(p.id))
 		else:
+			#report error
 			context['errors']=["COMMENT FAILURE: One Or More Fields Missing",]
 			return render(request, 'commentBoard/post.html',context)
+	# Handle GETS
 	else:
 		return render(request, 'commentBoard/post.html',context)
 
 
 def postVote(request, post_id):
 	p = Post.objects.get(id=post_id)
+	# if upvote increment score otherwise decrement
 	if request.POST.get("up")=="true":
 		p.score +=1
 	else:
@@ -61,6 +68,7 @@ def postVote(request, post_id):
 def commentVote(request,post_id):
 	commentId=request.POST.get("id")
 	c = Comment.objects.get(id=commentId)
+	# if upvote increment score otherwise decrement
 	if request.POST.get("up")=="true":
 		c.score +=1
 	else:
@@ -69,6 +77,7 @@ def commentVote(request,post_id):
 	return redirect('/'+str(post_id))
 
 def savePost(data):
+	# helper function to save post
 	try:
 		u = User.objects.get(name=data['user'])
 	except User.DoesNotExist:
@@ -79,6 +88,7 @@ def savePost(data):
 
 
 def getComments(id):
+	# helper function to get comments associated with post
 	try:
 		comments = Comment.objects.filter(post=id).order_by('-score')
 	except Comment.DoesNotExist:
@@ -87,6 +97,7 @@ def getComments(id):
 		return comments
 
 def saveComment(data, post):
+	#helper function to save comment
 	try:
 		u = User.objects.get(name=data['user'])
 	except User.DoesNotExist:
